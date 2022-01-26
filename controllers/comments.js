@@ -5,9 +5,9 @@ const { Comment } = require('../models');
 
 // Get Routes
 router.get('/', function (req, res) {
-    Comment.findAll()
-        .then(function (commentList) {
-            res.render('Comments', { Comment: commentList })
+    Comment.find()
+        .then(comments => {
+            res.json({ comment: Object.assign(comments, {}) })
         })
         .catch(function (err) {
             console.log('ERROR', err);
