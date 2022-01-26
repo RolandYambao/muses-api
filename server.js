@@ -23,7 +23,7 @@ app.use(passport.initialize());
 
 // controllers
 const users = require('./controllers/users');
-const comment = require('./controllers/comment');
+const comments = require('./controllers/comments');
 
 // home route
 app.get('/', ( req, res ) => {
@@ -33,7 +33,7 @@ app.get('/', ( req, res ) => {
 });
 
 app.use('/users', users);
-app.use('/comment', comment);
+app.use('/comments', comments);
 
 app.listen(PORT, () => {
     console.log(`Server listening on PORT`, PORT);

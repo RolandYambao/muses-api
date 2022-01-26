@@ -26,7 +26,7 @@ db.on('error', (error) => {
 
 // Import models here
 const User = require('./user');
-const Comment = require('./user');
+const Comment = require('./comment');
 
 module.exports = {
     // model goes here
