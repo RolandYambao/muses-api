@@ -6,7 +6,7 @@ let connectionString;
 if (process.env.NODE_ENV === 'production') {
     connectionString = process.env.DB_URL;
 } else {
-    connectionString = process.env.MONGO_URI 
+    connectionString = process.env.MONGO_URI
 }
 
 mongoose.connect(connectionString, {
@@ -24,12 +24,8 @@ db.on('error', (error) => {
     console.log('Database error', error);
 });
 
-// Import models here
-const User = require('./user');
-const Comment = require('./comment');
-
 module.exports = {
     // model goes here
-    User,
-    Comment,
+    User: require('./user'),
+    Comment: require('./comment'),
 }
