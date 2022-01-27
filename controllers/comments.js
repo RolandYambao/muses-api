@@ -31,34 +31,34 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
         });
 });
 
-// Edit
-router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-    let commentIndex = Number(req.params.id);
-    Comment.findByIdAndUpdate({
-        content: req.body.content,
-    }, { where: { id: commentIndex } })
-        .then(function (response) {
-            console.log('Edited Comment', response);
-            res.json(response);
-        })
-        .catch(function (error) {
-            console.log('ERROR', error);
-            res.json('Error occured, please try again....');
-        })
-});
+// // Edit
+// router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+//     let commentIndex = Number(req.params.id);
+//     Comment.findByIdAndUpdate({
+//         content: req.body.content,
+//     }, { where: { id: commentIndex } })
+//         .then(function (response) {
+//             console.log('Edited Comment', response);
+//             res.json(response);
+//         })
+//         .catch(function (error) {
+//             console.log('ERROR', error);
+//             res.json('Error occured, please try again....');
+//         })
+// });
 
-// Delete
-router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-    let commentIndex = Number(req.params.id);
-    Comment.findByIdAndDelete({ where: { id: commentIndex } })
-        .then(function (response) {
-            console.log('Comment Deleted', response);
-            res.json(response);
-        })
-        .catch(function (error) {
-            console.log('ERROR', error);
-            res.render('404', { message: 'Update was not successful. Please try again.' });
-        })
-});
+// // Delete
+// router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+//     let commentIndex = Number(req.params.id);
+//     Comment.findByIdAndDelete({ where: { id: commentIndex } })
+//         .then(function (response) {
+//             console.log('Comment Deleted', response);
+//             res.json(response);
+//         })
+//         .catch(function (error) {
+//             console.log('ERROR', error);
+//             res.render('404', { message: 'Update was not successful. Please try again.' });
+//         })
+// });
 
 module.exports = router;
