@@ -1,4 +1,5 @@
 const express = require('express');
+const passport = require('passport');
 const router = express.Router();
 
 const { Comment } = require('../models');
@@ -7,52 +8,52 @@ const { Comment } = require('../models');
 router.get('/', function (req, res) {
     Comment.find()
         .then(comments => {
-            res.json({ comment: Object.assign(comments, {}) })
+            res.json(comments)
         })
         .catch(function (err) {
             console.log('ERROR', err);
-            res.json({ message: 'Error occured, please try again....' });
+            res.json('Error occured, please try again....');
         });
 });
 
 // Post Routes
-router.post('/', function (req, res) {
+router.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
     Comment.create({
         content: req.body.content,
     })
         .then(function (newComment) {
             newComment = newComment.toJSON();
-            res.redirect('/gallery#comment');
+            res.json(newComment);
         })
         .catch(function (error) {
             console.log('ERROR', error);
-            res.render('404', { message: 'Comment was not added, please try again' });
+            res.json('Error occured, please try again....');
         });
 });
 
 // Edit
-router.put('/:id', function (req, res) {
+router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     let commentIndex = Number(req.params.id);
-    Comment.update({
+    Comment.findByIdAndUpdate({
         content: req.body.content,
     }, { where: { id: commentIndex } })
         .then(function (response) {
             console.log('Edited Comment', response);
-            res.redirect('/gallery#comment');
+            res.json(response);
         })
         .catch(function (error) {
             console.log('ERROR', error);
-            res.render('404', { message: 'Update was not successful. Please try again.' });
+            res.json('Error occured, please try again....');
         })
 });
 
 // Delete
-router.delete('/:id', function (req, res) {
+router.delete('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     let commentIndex = Number(req.params.id);
-    Comment.destroy({ where: { id: commentIndex } })
+    Comment.findByIdAndDelete({ where: { id: commentIndex } })
         .then(function (response) {
             console.log('Comment Deleted', response);
-            res.redirect('/gallery#comment');
+            res.json(response);
         })
         .catch(function (error) {
             console.log('ERROR', error);
