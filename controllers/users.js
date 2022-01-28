@@ -133,5 +133,35 @@ router.post('/new-portfolio', passport.authenticate('jwt', { session: false }), 
         })
 });
 
+router.put('/edit-portfolio', passport.authenticate('jwt', { session: false }), (req, res) => {
+    User.findById(req.user.id)
+        .then(user => {
+            user.portfolio[Number(req.body.portfolioNumber)] = {
+                pictureUrl: req.body.pictureUrl,
+                title: req.body.title,
+                description: req.body.description,
+            }
+            user.save(function (err) {
+                if (!err) console.log('Success!');
+                else {
+                    console.log(err);
+                }
+            });
+        })
+})
+
+router.delete('/delete-portfolio', passport.authenticate('jwt', { session: false }), (req, res) => {
+    User.findById(req.user.id)
+        .then(user => {
+            user.portfolio.splice([Number(req.body.portfolioNumber)], 1)
+            user.save(function (err) {
+                if (!err) console.log('Success!');
+                else {
+                    console.log(err);
+                }
+            });
+        })
+})
+
 
 module.exports = router;
