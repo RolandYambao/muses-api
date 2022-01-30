@@ -154,13 +154,18 @@ router.put('/edit-portfolio', passport.authenticate('jwt', { session: false }), 
 router.delete('/delete-portfolio', passport.authenticate('jwt', { session: false }), (req, res) => {
     User.findById(req.user.id)
         .then(user => {
-            user.portfolio.splice([Number(req.body.portfolioNumber) - 1], 1)
+            console.log("BEFORE", user.portfolio)
+            console.log("Req.Body", req.body)
+            user.portfolio.splice(Number(req.body.portfolioNumber) - 1, 1)
+            console.log("NUMBER AFTER", req.body.portfolioNumber)
+            console.log("AFTER", user.portfolio)
             user.save(function (err) {
                 if (!err) console.log('Success!');
                 else {
                     console.log(err);
                 }
             });
+            res.send("Okay")
         })
 })
 
