@@ -156,6 +156,7 @@ router.delete('/delete-portfolio', passport.authenticate('jwt', { session: false
         .then(user => {
             console.log("BEFORE", user.portfolio)
             console.log("Req.Body", req.body)
+            console.log("NUMBER BEFORE", req.body.portfolioNumber)
             user.portfolio.splice(Number(req.body.portfolioNumber) - 1, 1)
             console.log("NUMBER AFTER", req.body.portfolioNumber)
             console.log("AFTER", user.portfolio)
