@@ -114,11 +114,15 @@ router.get('/my-portfolio', passport.authenticate('jwt', { session: false }), (r
         })
 });
 
-router.get('/all-portfolios', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.get('/all-users', passport.authenticate('jwt', { session: false }), (req, res) => {
     User.find()
         .then(user => {
             const returnedUser = Object.assign(user, {});
-            returnedUser.password = null;
+            for (let i = 0; i < returnedUser.length; i++) {
+                returnedUser.map(() => {
+                    returnedUser[i].password = null;
+                })
+            }
             res.json({ user: returnedUser });
         })
 });
