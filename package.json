@@ -4,8 +4,7 @@
   "description": "This is a code along for MERN Auth",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "heroku-postbuild": "There is a bunch of commands here. You can remove this!"
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
