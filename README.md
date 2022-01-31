@@ -1,58 +1,282 @@
-# MERN Authentication `Backend`
+# muses-api
+This is the backend API of the Muses Center App located here: https://github.com/RolandYambao/muses-center
 
-## What it includes
+## Purpose:
+The Muses Center is a MERN application showcasing an online museum where artists can post their artwork to be curated by the site administrator. The best works will be shown in a gallery where anonymous comments can critique the work.
 
-* Mongoose User schema and model
-* Settings for the database
-* Passport and passport-jwt for authentication
-* JSON Web Token
-* Passwords that are hashed with BCrypt
+## Technologies:
+This MERN Application, as stated in its name, utilizes MongoDB (as the database), Express (for routes), React (as the framework), and Node.js. Other technologies include Axios and bycrypt used for fetching the API and authentication respectively.
 
-## Dependencies
+## Development Approach:
+The Muses Center was designed for specific features manifesting in their respective page. The Gallery Showcased the curated art with creatable anonymous comments, the portfolio showcases the CRUD functionality of portfolio pieces associated with each use, and the store simply has clickable buttons with props. All of this is wrapped around a particular sharp and simple aesthetic that mimics the serenity of a museum.
 
-```zsh
-npm install bcryptjs cors dotenv express jsonwebtoken mongoose passport passport-jwt
-```
+## Installation:
+Firstly, fork and clone this repository and type "npm install" in the terminal upon opening this project, this will install all necessary dependencies to ensure its functionality. Create an .env file containing "MONGO_URI" with your mongo SRV placed as the link. Then add a "JWT_SECRET=" with whatever name you wish after the equal sign. Run it with "npm start" on the backend first then frontend.
 
-This is a code along for MERN Auth Backend
+## Code Snippets:
+1. user Model - This is the Model for users signing up.
+~~~js
+require('dotenv').config();
+const mongoose = require('mongoose');
 
-Tasks:
-- [x] Set up server
-- [x] Test home route
-- [x] Set up models folder and `index.js`
-- [ ] Add a `.env` with your `MONGO_URI` and `JWT_SECRET`
-```text
-MONGO_URI=mongodb://localhost:27017/myApp
-JWT_SECRET=thisismysecret
-```
-- [x] Set up `User` models
+const portfolioSchema = new mongoose.Schema({
+pictureUrl: String,
+title: String,
+description: String,
+})
 
-### `User` Model
+const userSchema = new mongoose.Schema({
+name: String,
+email: String,
+password: String,
+portfolio: [portfolioSchema]
+});
 
-| Column Name | Data Type | Notes |
-| --------------- | ------------- | ------------------------------ |
-| _id | Integer | Serial Primary Key, Auto-generated |
-| name | String | Must be provided |
-| email | String | Must be unique / used for login |
-| password | String | Stored as a hash |
-| timesLoggedIn | Number | used to track the amount of times a user logs in |
-| date | Date | new Date() |
-| __v | Number | Auto-generated |
+const User = mongoose.model('User', userSchema);
 
-- [ ] Make controllers folder and test `users/test` route
-- [ ] Setup passport strategy
-- [ ] Intialize passport and pass passport as arguemnt to config
-- [ ] Make controllers and routes for users
-   - [ ] `/signup`, `/login`, `/profile`
-   - [ ] Test each one after completing it in Postman
+module.exports = User;
+~~~
 
-| Controller/Config/Model | Links | Description |
-| --- | --- | --- |
-| `GET` `/`| [`/`](#) | The home route |
-| `GET` `/users/test`| [`/test`](https://github.com/SEI-1025/mern-authentication-backend/blob/main/docs/users-controller.md#get-userstest-route) | A route to test the users controllers |
-| `POST` `/users/signup`| [`/signup`](https://github.com/SEI-1025/mern-authentication-backend/blob/main/docs/users-controller.md#post-userssignup-route) | A route that allows a user to signup |
-| `POST` `/users/login`| [`/login`](https://github.com/SEI-1025/mern-authentication-backend/blob/main/docs/users-controller.md#post-userslogin-route) | A route that allows a user to login |
-| `GET` `/users/profile`| [`/profile`](https://github.com/SEI-1025/mern-authentication-backend/blob/main/docs/users-controller.md#get-usersprofile-route) | A route that returns the data for a user that's logged in |
-| `passport`| [`passport`](https://github.com/SEI-1025/mern-authentication-backend/blob/main/docs/passport.md) | Passport authentication using JSON Web Token  |
-| `User`| [`User`](https://github.com/SEI-1025/mern-authentication-backend/blob/main/docs/models.md#user-model) | User schema and model  |
-| `index.js` | [`index.js`](https://github.com/SEI-1025/mern-authentication-backend/blob/main/docs/server.md) | Server file |
+2. users Cntroller - Showcasing the controller code of users
+~~~js
+require('dotenv').config();
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = process.env;
+const passport = require('passport');
+
+const { User } = require('../models');
+
+router.get('/test', (req, res) => {
+res.json({
+message: 'Testing users controller'
+});
+});
+
+router.post('/signup', async (req, res) => {
+// POST - adding the new user to the database
+console.log('===> Inside of /signup');
+console.log(req.body);
+
+User.findOne({ email: req.body.email })
+.then(user => {
+// if email already exists, a user will come back
+if (user) {
+// send a 400 response
+return res.status(400).json({ message: 'Email already exists' });
+} else {
+// Create a new user
+const newUser = new User({
+name: req.body.name,
+email: req.body.email,
+password: req.body.password,
+portfolio: [],
+});
+
+// Salt and hash the password - before saving the user
+bcrypt.genSalt(10, (err, salt) => {
+if (err) throw Error;
+
+bcrypt.hash(newUser.password, salt, (err, hash) => {
+if (err) console.log('==> Error inside of hash', err);
+// Change the password in newUser to the hash
+newUser.password = hash;
+newUser.save()
+.then(createdUser => res.json(createdUser))
+.catch(err => console.log(err));
+});
+});
+}
+})
+.catch(err => {
+console.log('Error finding user', err);
+res.json({ message: 'An error occured. Please try again.' })
+})
+});
+
+router.post('/login', async (req, res) => {
+// POST - finding a user and returning the user
+console.log('===> Inside of /login');
+console.log(req.body);
+
+const foundUser = await User.findOne({ email: req.body.email });
+
+if (foundUser) {
+// user is in the DB
+let isMatch = await bcrypt.compare(req.body.password, foundUser.password);
+console.log('Match User', isMatch);
+if (isMatch) {
+// Updated timesLoggedin
+foundUser.timesLoggedIn += 1;
+foundUser.save();
+// if user match, then we want to send a JSON Web Token
+// Create a token payload
+// add an expiredToken = Date.now()
+// save the user
+const payload = {
+id: foundUser.id,
+email: foundUser.email,
+name: foundUser.name
+}
+
+jwt.sign(payload, JWT_SECRET, { expiresIn: 3600 }, (err, token) => {
+if (err) {
+res.status(400).json({ message: 'Session has endedd, please log in again' });
+}
+const legit = jwt.verify(token, JWT_SECRET, { expiresIn: 60 });
+console.log('===> legit');
+console.log(legit);
+res.json({ success: true, token: `Bearer ${token}`, userData: legit });
+});
+
+} else {
+return res.status(400).json({ message: 'Email or Password is incorrect' });
+}
+} else {
+return res.status(400).json({ message: 'User not found' });
+}
+});
+
+router.get('/profile', passport.authenticate('jwt', { session: false }), (req, res) => {
+console.log('====> inside /profile');
+console.log('====> user', req.user);
+const { id, name, email } = req.user; // object with user object inside
+res.json({ id, name, email });
+});
+
+router.get('/my-portfolio', passport.authenticate('jwt', { session: false }), (req, res) => {
+User.findById(req.user.id)
+.then(user => {
+const returnedUser = Object.assign(user, {});
+returnedUser.password = null;
+res.json({ user: returnedUser });
+})
+});
+
+router.get('/all-users', passport.authenticate('jwt', { session: false }), (req, res) => {
+User.find()
+.then(user => {
+const returnedUser = Object.assign(user, {});
+for (let i = 0; i < returnedUser.length; i++) {
+returnedUser.map(() => {
+returnedUser[i].password = null;
+})
+}
+res.json({ user: returnedUser });
+})
+});
+
+router.post('/new-portfolio', passport.authenticate('jwt', { session: false }), (req, res) => {
+User.findById(req.user.id)
+.then(user => {
+user.portfolio.push(
+{
+pictureUrl: req.body.pictureUrl,
+title: req.body.title,
+description: req.body.description,
+}
+)
+user.save(function (err) {
+if (!err) console.log('Success!');
+else {
+console.log(err);
+}
+});
+})
+});
+
+router.put('/edit-portfolio', passport.authenticate('jwt', { session: false }), (req, res) => {
+User.findById(req.user.id)
+.then(user => {
+user.portfolio[Number(req.body.portfolioNumber) - 1] = {
+pictureUrl: req.body.pictureUrl,
+title: req.body.title,
+description: req.body.description,
+}
+user.save(function (err) {
+if (!err) console.log('Success!');
+else {
+console.log(err);
+}
+});
+})
+})
+
+router.delete('/delete-portfolio', passport.authenticate('jwt', { session: false }), (req, res) => {
+User.findById(req.user.id)
+.then(user => {
+user.portfolio.splice(Number(req.body.portfolioData.portfolioNumber) - 1, 1)
+user.save(function (err) {
+if (!err) console.log('Success!');
+else {
+console.log(err);
+}
+});
+})
+})
+
+module.exports = router;
+~~~
+
+3. comment Model - The model showcasing the anonymous comment critiques.
+~~~js
+require('dotenv').config();
+const mongoose = require('mongoose');
+
+const commentSchema = new mongoose.Schema({
+content: String,
+});
+
+const Comment = mongoose.model('Comment', commentSchema);
+
+module.exports = Comment;
+~~~
+
+4. comments Controller - The controller for said anonymous comment critiques
+~~~js
+const express = require('express');
+const passport = require('passport');
+const router = express.Router();
+
+const { Comment } = require('../models');
+
+// Get Routes
+router.get('/', function (req, res) {
+Comment.find()
+.then(comments => {
+res.json(comments)
+})
+.catch(function (err) {
+console.log('ERROR', err);
+res.json('Error occured, please try again....');
+});
+});
+
+// Post Routes
+router.post('/', function (req, res) {
+Comment.create({
+content: req.body.content,
+})
+.then(function (newComment) {
+newComment = newComment.toJSON();
+res.json(newComment);
+})
+.catch(function (error) {
+console.log('ERROR', error);
+res.json('Error occured, please try again....');
+});
+});
+
+module.exports = router;
+~~~
+
+## Routes
+All Routes posted Above in the Code Examples
+
+## Reflections:
+I am proud of this project, for its simple yet beautiful appearance. The concept of the site is also quite utilitarian and unique, it is akin to an art portfolio website focused solely on competitiveness on making the best work.
+
+## License
+Distributed under the MIT License. See `LICENSE.md` for more information.
