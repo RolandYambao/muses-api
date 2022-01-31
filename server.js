@@ -28,7 +28,7 @@ const comments = require('./controllers/comments');
 // home route
 app.get('/', ( req, res ) => {
     res.json({
-        message: "Welcome to the MERN Auth API"
+        message: "Welcome to the Muses Center API"
     });
 });
 
