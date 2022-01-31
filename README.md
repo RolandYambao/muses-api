@@ -1,6 +1,9 @@
 # muses-api
 This is the backend API of the Muses Center App located here: https://github.com/RolandYambao/muses-center
 
+# Deployment:
+http://muses-center-api.herokuapp.com/
+
 ## Purpose:
 The Muses Center is a MERN application showcasing an online museum where artists can post their artwork to be curated by the site administrator. The best works will be shown in a gallery where anonymous comments can critique the work.
 
